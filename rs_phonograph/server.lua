@@ -35,10 +35,7 @@ end)
 
 RegisterNetEvent('rs_phonograph:server:setVolume')
 AddEventHandler('rs_phonograph:server:setVolume', function(uniqueId, newVolume)
-    if currentlyPlaying[uniqueId] then
-        currentlyPlaying[uniqueId].volume = newVolume
-        TriggerClientEvent('rs_phonograph:client:setVolume', -1, uniqueId, newVolume)
-    end
+    TriggerClientEvent('rs_phonograph:client:setVolume', -1, uniqueId, newVolume)
 end)
 
 RegisterNetEvent('rs_phonograph:server:soundEnded')
