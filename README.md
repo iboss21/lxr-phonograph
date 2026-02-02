@@ -72,8 +72,8 @@ The script automatically detects your framework and adapts accordingly:
 
 1. **Download** the script and place it in your resources folder
 2. **Rename** the folder to `lxr-phonograph` (important!)
-3. **Import** the SQL file: `rs_phonograph/img and sql/sql phonograph.sql`
-4. **Configure** `rs_phonograph/config.lua` to your preferences
+3. **Import** the SQL file: `lxr-phonograph/img and sql/sql phonograph.sql`
+4. **Configure** `lxr-phonograph/config.lua` to your preferences
 5. **Add** to your `server.cfg`:
    ```
    ensure oxmysql
