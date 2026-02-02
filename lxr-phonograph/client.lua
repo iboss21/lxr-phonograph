@@ -174,6 +174,32 @@ local function ShowInput(data)
     end
 end
 
+-- Draw 3D text at a position in the world
+local function DrawText3D(x, y, z, text)
+    local onScreen, _x, _y = GetScreenCoordFromWorldCoord(x, y, z)
+    local px, py, pz = table.unpack(GetGameplayCamCoords())
+    local dist = GetDistanceBetweenCoords(px, py, pz, x, y, z, true)
+    
+    local scale = (1 / dist) * 2
+    local fov = (1 / GetGameplayCamFov()) * 100
+    local scale = scale * fov
+    
+    if onScreen then
+        SetTextScale(0.0 * scale, 0.55 * scale)
+        SetTextFont(4)
+        SetTextProportional(1)
+        SetTextColour(255, 255, 255, 215)
+        SetTextDropshadow(0, 0, 0, 0, 255)
+        SetTextEdge(2, 0, 0, 0, 150)
+        SetTextDropShadow()
+        SetTextOutline()
+        SetTextEntry("STRING")
+        SetTextCentre(1)
+        AddTextComponentString(text)
+        DrawText(_x, _y)
+    end
+end
+
 -- ═══════════════════════════════════════════════════════════════════════════════
 -- INITIALIZE ON RESOURCE START
 -- ═══════════════════════════════════════════════════════════════════════════════
@@ -399,7 +425,7 @@ AddEventHandler('rs_phonograph:client:placePropPhonograph', function()
 
     FreezeEntityPosition(tempObject, true)
     SetEntityCollision(tempObject, false, false)
-    SetEntityAlpha(tempObject, 150, false)
+    SetEntityAlpha(tempObject, 200, false)  -- Increased visibility from 150 to 200
     SendNUIMessage({ 
         action = "show",
         translations = Config.ControlTranslations
@@ -418,6 +444,21 @@ AddEventHandler('rs_phonograph:client:placePropPhonograph', function()
             for _, keyCode in pairs(Config.Keys) do
                 DisableControlAction(0, keyCode, true)
             end
+
+            -- Draw visual gizmo: ground marker circle
+            DrawMarker(
+                28,  -- Cylinder marker type
+                posX, posY, posZ - 0.98,  -- Position slightly below object
+                0.0, 0.0, 0.0,  -- Direction
+                0.0, 0.0, 0.0,  -- Rotation
+                0.8, 0.8, 0.3,  -- Scale (width, width, height)
+                255, 200, 0, 150,  -- Color (yellow/gold with transparency)
+                false, false, 2, false, nil, nil, false
+            )
+
+            -- Draw 3D text above the object showing placement info
+            local textZ = posZ + 0.5
+            DrawText3D(posX, posY, textZ, "~o~Place Phonograph~s~~n~[ENTER] to confirm")
 
             local moved = false
 
@@ -452,22 +493,93 @@ AddEventHandler('rs_phonograph:client:placePropPhonograph', function()
             end
 
             if IsDisabledControlJustPressed(0,Config.Keys.confirmPlace) then
+                
+                -- Show confirmation prompt
+                local confirmText = "Are you sure you want to place the phonograph here?"
+                local confirmed = false
+                
+                -- Use framework-specific confirmation dialog
+                if FrameworkName == 'vorp' then
+                    local promptGroup = PromptRegisterBegin()
+                    local confirmPrompt = PromptRegisterBegin()
+                    PromptSetControlAction(confirmPrompt, 0xC7B5340A) -- ENTER key
+                    local str = CreateVarString(10, "LITERAL_STRING", "Press ENTER to confirm placement")
+                    PromptSetText(confirmPrompt, str)
+                    PromptSetEnabled(confirmPrompt, true)
+                    PromptSetVisible(confirmPrompt, true)
+                    PromptSetHoldMode(confirmPrompt, true)
+                    PromptSetGroup(confirmPrompt, promptGroup)
+                    PromptRegisterEnd(confirmPrompt)
+                    
+                    local cancelPrompt = PromptRegisterBegin()
+                    PromptSetControlAction(cancelPrompt, 0x760A9C6F) -- G key
+                    local cancelStr = CreateVarString(10, "LITERAL_STRING", "Press G to cancel")
+                    PromptSetText(cancelPrompt, cancelStr)
+                    PromptSetEnabled(cancelPrompt, true)
+                    PromptSetVisible(cancelPrompt, true)
+                    PromptSetHoldMode(cancelPrompt, false)
+                    PromptSetGroup(cancelPrompt, promptGroup)
+                    PromptRegisterEnd(cancelPrompt)
+                    
+                    -- Wait for confirmation or cancellation
+                    local waitingForConfirm = true
+                    while waitingForConfirm do
+                        Wait(0)
+                        if PromptHasHoldModeCompleted(confirmPrompt) then
+                            confirmed = true
+                            waitingForConfirm = false
+                        elseif IsControlJustPressed(0, 0x760A9C6F) then
+                            confirmed = false
+                            waitingForConfirm = false
+                        end
+                    end
+                    
+                    PromptDelete(confirmPrompt)
+                    PromptDelete(cancelPrompt)
+                else
+                    -- For other frameworks, show a simple notification and wait for ENTER or G
+                    Notify("Confirmation", "Press ENTER again to confirm or G to cancel", "primary", 3000)
+                    
+                    local waitingForConfirm = true
+                    local startTime = GetGameTimer()
+                    while waitingForConfirm and (GetGameTimer() - startTime) < 5000 do
+                        Wait(0)
+                        DisableControlAction(0, Config.Keys.confirmPlace, true)
+                        DisableControlAction(0, Config.Keys.cancelPlace, true)
+                        
+                        if IsDisabledControlJustPressed(0, Config.Keys.confirmPlace) then
+                            confirmed = true
+                            waitingForConfirm = false
+                        elseif IsDisabledControlJustPressed(0, Config.Keys.cancelPlace) then
+                            confirmed = false
+                            waitingForConfirm = false
+                        end
+                    end
+                    
+                    if waitingForConfirm then
+                        confirmed = false -- Timeout
+                    end
+                end
+                
+                if confirmed then
+                    isPlacing = false
+                    SendNUIMessage({ action = "hide" })
 
-                isPlacing = false
-                SendNUIMessage({ action = "hide" })
+                    local pos = GetEntityCoords(tempObject)
+                    local rot = vector3(0.0, 0.0, GetEntityHeading(tempObject))
 
-                local pos = GetEntityCoords(tempObject)
-                local rot = vector3(0.0, 0.0, GetEntityHeading(tempObject))
+                    DeleteObject(tempObject)
+                    lastPlacedPhonograph = nil
 
-                DeleteObject(tempObject)
-                lastPlacedPhonograph = nil
+                    Wait(1000)
 
-                Wait(1000)
+                    TriggerServerEvent('rs_phonograph:server:saveOwner', pos, rot)
+                    TriggerServerEvent("rs_phonograph:givePhonograph")
 
-                TriggerServerEvent('rs_phonograph:server:saveOwner', pos, rot)
-                TriggerServerEvent("rs_phonograph:givePhonograph")
-
-                Notify(Config.Notify.Phono, Config.Notify.Place, "success", 2000)
+                    Notify(Config.Notify.Phono, Config.Notify.Place, "success", 2000)
+                else
+                    Notify("Phonograph", "Placement cancelled, adjust position and try again", "error", 2000)
+                end
             end
 
             if IsDisabledControlJustPressed(0,Config.Keys.cancelPlace) then
