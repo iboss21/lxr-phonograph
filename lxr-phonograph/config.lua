@@ -283,7 +283,8 @@ Config.ControlTranslations = {
     Height  = "[7/8]     - Raise/Lower",
     Confirm = "[ENTER]   - Confirm position",
     Cancel  = "[G]       - Cancel placement",
-    Speed   = "[3]       - Adjust speed"
+    Speed   = "[3]       - Adjust speed",
+    PlacementText = "~o~Place Phonograph~s~~n~[ENTER] to confirm"
 }
 
 Config.MusicTranslations = {

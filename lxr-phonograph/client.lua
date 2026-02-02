@@ -458,7 +458,7 @@ AddEventHandler('rs_phonograph:client:placePropPhonograph', function()
 
             -- Draw 3D text above the object showing placement info
             local textZ = posZ + 0.5
-            DrawText3D(posX, posY, textZ, "~o~Place Phonograph~s~~n~[ENTER] to confirm")
+            DrawText3D(posX, posY, textZ, Config.ControlTranslations.PlacementText)
 
             local moved = false
 
@@ -495,8 +495,8 @@ AddEventHandler('rs_phonograph:client:placePropPhonograph', function()
             if IsDisabledControlJustPressed(0,Config.Keys.confirmPlace) then
                 
                 -- Show confirmation prompt
-                local confirmText = "Are you sure you want to place the phonograph here?"
                 local confirmed = false
+                local confirmTimeout = 5000  -- Timeout in milliseconds
                 
                 -- Use framework-specific confirmation dialog
                 if FrameworkName == 'vorp' then
@@ -535,14 +535,12 @@ AddEventHandler('rs_phonograph:client:placePropPhonograph', function()
                     PromptDelete(cancelPrompt)
                 else
                     -- For other frameworks, show a simple notification and wait for ENTER or G
-                    Notify("Confirmation", "Press ENTER again to confirm or G to cancel", "primary", 5000)
+                    Notify("Confirmation", "Press ENTER again to confirm or G to cancel", "primary", confirmTimeout)
                     
                     local waitingForOtherConfirm = true
                     local startTime = GetGameTimer()
-                    while waitingForOtherConfirm and (GetGameTimer() - startTime) < 5000 do
+                    while waitingForOtherConfirm and (GetGameTimer() - startTime) < confirmTimeout do
                         Wait(0)
-                        DisableControlAction(0, Config.Keys.confirmPlace, true)
-                        DisableControlAction(0, Config.Keys.cancelPlace, true)
                         
                         if IsDisabledControlJustPressed(0, Config.Keys.confirmPlace) then
                             confirmed = true
