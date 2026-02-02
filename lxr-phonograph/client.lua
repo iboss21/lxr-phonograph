@@ -180,9 +180,9 @@ local function DrawText3D(x, y, z, text)
     local px, py, pz = table.unpack(GetGameplayCamCoords())
     local dist = GetDistanceBetweenCoords(px, py, pz, x, y, z, true)
     
-    local scale = (1 / dist) * 2
+    local baseScale = (1 / dist) * 2
     local fov = (1 / GetGameplayCamFov()) * 100
-    local scale = scale * fov
+    local scale = baseScale * fov
     
     if onScreen then
         SetTextScale(0.0 * scale, 0.55 * scale)
@@ -538,7 +538,7 @@ AddEventHandler('rs_phonograph:client:placePropPhonograph', function()
                     PromptDelete(cancelPrompt)
                 else
                     -- For other frameworks, show a simple notification and wait for ENTER or G
-                    Notify("Confirmation", "Press ENTER again to confirm or G to cancel", "primary", 3000)
+                    Notify("Confirmation", "Press ENTER again to confirm or G to cancel", "primary", 5000)
                     
                     local waitingForConfirm = true
                     local startTime = GetGameTimer()
@@ -558,6 +558,7 @@ AddEventHandler('rs_phonograph:client:placePropPhonograph', function()
                     
                     if waitingForConfirm then
                         confirmed = false -- Timeout
+                        Notify("Phonograph", "Placement timed out - please try again", "error", 2000)
                     end
                 end
                 
