@@ -1,6 +1,44 @@
 # 🐺 LXR Phonograph - Implementation Summary
 
-## ✅ Issue Resolution
+## ✅ Latest Fix: Phonograph Placement Issue (V2.1.1)
+
+### Issue Reported
+**Problem**: "in old original script there was working logic to place the phonogram prop and use it. now i cant place no way. i tried everyhing"
+
+**Root Cause**: Race condition where `Framework.RegisterUsableItem()` was being called before the Framework was fully initialized, causing the phonograph item to never be registered properly. The Framework initialization happens asynchronously in a thread, but item registration was happening synchronously on resource load.
+
+**Solution Implemented**:
+1. **Wrapped item registration in initialization check**: Modified `server.lua` to wait for `Framework.IsReady` flag before attempting to register the phonograph item
+2. **Added retry logic**: Enhanced `shared/framework.lua` to retry framework initialization up to 10 times with 2-second delays
+3. **Improved error handling**: Added pcall() wrappers around all framework core initialization calls to catch and log errors
+4. **Conditional debug logging**: Made debug output conditional on `Config.Debug.enabled` to reduce console spam in production
+5. **Standalone mode fix**: Initialized `Framework.Core` as an empty table for standalone mode to prevent nil reference errors
+
+### Files Changed
+- `lxr-phonograph/server.lua`: Item registration timing fix with Framework.IsReady check
+- `lxr-phonograph/shared/framework.lua`: Error handling, retry logic, and proper pcall usage
+
+### Testing Steps
+1. Ensure the resource is named exactly `lxr-phonograph`
+2. Start the server with your framework (LXR-Core, RSG-Core, VORP, etc.)
+3. Check console for: `[LXR-Phonograph] Framework Adapter: Ready (Framework: <name>)`
+4. Check console for: `[LXR-Phonograph] Phonograph item registration complete`
+5. Give yourself the phonograph item: `give <player_id> lxr_phonograph 1`
+6. Use the item from your inventory
+7. You should now see the placement interface with controls
+
+### Debug Mode
+To enable detailed logging for troubleshooting, set in `config.lua`:
+```lua
+Config.Debug = {
+    enabled = true,
+    -- ... other debug options
+}
+```
+
+---
+
+## ✅ Previous Issue Resolution (V2.1.0)
 
 ### Primary Issue Fixed
 **Error**: `[script:lxr-phonograp] SCRIPT ERROR: @lxr-phonograph/server.lua:59: No such export InventoryAPI in resource rsg-inventory`
