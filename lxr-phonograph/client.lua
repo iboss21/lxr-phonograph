@@ -496,13 +496,12 @@ AddEventHandler('rs_phonograph:client:placePropPhonograph', function()
                 
                 -- Show confirmation prompt
                 local confirmed = false
-                local confirmTimeout = 5000  -- Timeout in milliseconds
                 
                 -- Use framework-specific confirmation dialog
                 if FrameworkName == 'vorp' then
                     local confirmPrompt = PromptRegisterBegin()
                     PromptSetControlAction(confirmPrompt, 0xC7B5340A) -- ENTER key
-                    local str = CreateVarString(10, "LITERAL_STRING", "Press ENTER to confirm placement")
+                    local str = CreateVarString(10, "LITERAL_STRING", Config.ControlTranslations.VorpConfirm)
                     PromptSetText(confirmPrompt, str)
                     PromptSetEnabled(confirmPrompt, true)
                     PromptSetVisible(confirmPrompt, true)
@@ -511,7 +510,7 @@ AddEventHandler('rs_phonograph:client:placePropPhonograph', function()
                     
                     local cancelPrompt = PromptRegisterBegin()
                     PromptSetControlAction(cancelPrompt, 0x760A9C6F) -- G key
-                    local cancelStr = CreateVarString(10, "LITERAL_STRING", "Press G to cancel")
+                    local cancelStr = CreateVarString(10, "LITERAL_STRING", Config.ControlTranslations.VorpCancel)
                     PromptSetText(cancelPrompt, cancelStr)
                     PromptSetEnabled(cancelPrompt, true)
                     PromptSetVisible(cancelPrompt, true)
@@ -535,11 +534,11 @@ AddEventHandler('rs_phonograph:client:placePropPhonograph', function()
                     PromptDelete(cancelPrompt)
                 else
                     -- For other frameworks, show a simple notification and wait for ENTER or G
-                    Notify("Confirmation", "Press ENTER again to confirm or G to cancel", "primary", confirmTimeout)
+                    Notify("Confirmation", Config.Notify.ConfirmPlacement, "primary", Config.PlacementConfirmTimeout)
                     
                     local waitingForOtherConfirm = true
                     local startTime = GetGameTimer()
-                    while waitingForOtherConfirm and (GetGameTimer() - startTime) < confirmTimeout do
+                    while waitingForOtherConfirm and (GetGameTimer() - startTime) < Config.PlacementConfirmTimeout do
                         Wait(0)
                         
                         if IsDisabledControlJustPressed(0, Config.Keys.confirmPlace) then
@@ -553,7 +552,7 @@ AddEventHandler('rs_phonograph:client:placePropPhonograph', function()
                     
                     if waitingForOtherConfirm then
                         confirmed = false -- Timeout
-                        Notify("Phonograph", "Placement timed out - please try again", "error", 2000)
+                        Notify(Config.Notify.Phono, Config.Notify.PlacementTimeout, "error", 2000)
                     end
                 end
                 
@@ -574,7 +573,7 @@ AddEventHandler('rs_phonograph:client:placePropPhonograph', function()
 
                     Notify(Config.Notify.Phono, Config.Notify.Place, "success", 2000)
                 else
-                    Notify("Phonograph", "Placement cancelled, adjust position and try again", "error", 2000)
+                    Notify(Config.Notify.Phono, Config.Notify.PlacementCancelled, "error", 2000)
                 end
             end
 

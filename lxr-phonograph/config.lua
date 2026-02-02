@@ -273,6 +273,10 @@ Config.Notify = {
     LoopOnMessage = "Loop enabled.",
     LoopOffMessage = "Loop disabled.",
     Picked = "You have collected your phonograph",
+    ConfirmPlacement = "Press ENTER again to confirm or G to cancel",
+    PlacementTimeout = "Placement timed out - please try again",
+    PlacementCancelled = "Placement cancelled, adjust position and try again",
+}
     Dont = "This phonograph does not belong to you",
 }
 
@@ -284,7 +288,9 @@ Config.ControlTranslations = {
     Confirm = "[ENTER]   - Confirm position",
     Cancel  = "[G]       - Cancel placement",
     Speed   = "[3]       - Adjust speed",
-    PlacementText = "~o~Place Phonograph~s~~n~[ENTER] to confirm"
+    PlacementText = "~o~Place Phonograph~s~~n~[ENTER] to confirm",
+    VorpConfirm = "Press ENTER to confirm placement",
+    VorpCancel = "Press G to cancel"
 }
 
 Config.MusicTranslations = {
@@ -300,6 +306,7 @@ Config.WithEffect = false      -- Set to true if you want the sound effect to pl
 Config.VolumeEffect = 0.3      -- Change the effect volume here
 Config.AllowCustomSongs = true -- If set to false, people will not be able to play their own songs, only those from the Choose a Song list
 Config.AllowListSongs = true   -- if set to true, the list of songs from Config.SongList will appear in the menu; if set to false, the option to choose a song will not be shown
+Config.PlacementConfirmTimeout = 5000  -- Time in milliseconds to wait for placement confirmation (5 seconds)
 
 Config.SongList = {
     { label = "Émile Waldteufel - Estudiantina", url = "https://youtu.be/q6R5M52lqlw?list=PLJe4EftqVf-ujHNCbcZBwRvwkYuiuHuGl" },
