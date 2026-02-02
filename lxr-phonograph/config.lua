@@ -222,7 +222,7 @@ Config.FrameworkSettings = {
 -- ████████████████████████ GENERAL PHONOGRAPH SETTINGS ███████████████████████████
 -- ████████████████████████████████████████████████████████████████████████████████
 
-Config.PhonoItems = "phonograph"
+Config.PhonoItems = "lxr_phonograph"
 
 Config.Keys = {
     moveForward    = 0x6319DB71, -- Arrow Up
