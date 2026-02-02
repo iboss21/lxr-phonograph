@@ -273,11 +273,10 @@ Config.Notify = {
     LoopOnMessage = "Loop enabled.",
     LoopOffMessage = "Loop disabled.",
     Picked = "You have collected your phonograph",
+    Dont = "This phonograph does not belong to you",
     ConfirmPlacement = "Press ENTER again to confirm or G to cancel",
     PlacementTimeout = "Placement timed out - please try again",
     PlacementCancelled = "Placement cancelled, adjust position and try again",
-}
-    Dont = "This phonograph does not belong to you",
 }
 
 Config.ControlTranslations = {
