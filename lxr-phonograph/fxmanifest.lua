@@ -2,18 +2,43 @@ fx_version 'cerulean'
 game 'rdr3'
 rdr3_warning 'I acknowledge that this is a prerelease build of RedM, and I am aware my resources *will* become incompatible once RedM ships.'
 
-description 'LXR Phonograph - Multi-Framework Music System for RedM'
-author 'iBoss21 / The Lux Empire (Adapted from riversafe)'
-version '2.0.0'
+lua54 'yes'
 
+-- ═══════════════════════════════════════════════════════════════════════════════
+--     ██╗     ██╗  ██╗██████╗     ██████╗ ██╗  ██╗ ██████╗ ███╗   ██╗ ██████╗ 
+--     ██║     ╚██╗██╔╝██╔══██╗    ██╔══██╗██║  ██║██╔═══██╗████╗  ██║██╔═══██╗
+--     ██║      ╚███╔╝ ██████╔╝    ██████╔╝███████║██║   ██║██╔██╗ ██║██║   ██║
+--     ██║      ██╔██╗ ██╔══██╗    ██╔═══╝ ██╔══██║██║   ██║██║╚██╗██║██║   ██║
+--     ███████╗██╔╝ ██╗██║  ██║    ██║     ██║  ██║╚██████╔╝██║ ╚████║╚██████╔╝
+--     ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝    ╚═╝     ╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═══╝ ╚═════╝ 
+-- ═══════════════════════════════════════════════════════════════════════════════
+--
+--     🎵 LXR Phonograph - Multi-Framework Music System
+--
+--     A complete phonograph system for RedM with full multi-framework support
+--     Allows players to place phonographs, play music, and enjoy synchronized audio
+--
 -- ═══════════════════════════════════════════════════════════════════════════════
 -- SERVER INFORMATION
 -- ═══════════════════════════════════════════════════════════════════════════════
--- Server:      The Land of Wolves 🐺
--- Website:     https://www.wolves.land
--- Discord:     https://discord.gg/CrKcWdfd3A
--- GitHub:      https://github.com/iBoss21
--- Store:       https://theluxempire.tebex.io
+--     Server:      The Land of Wolves 🐺
+--     Tagline:     Georgian RP 🇬🇪 | მგლების მიწა - რჩეულთა ადგილი!
+--     Type:        Serious Hardcore Roleplay
+--     Access:      Discord & Whitelisted
+--     Website:     https://www.wolves.land
+--     Discord:     https://discord.gg/CrKcWdfd3A
+--     GitHub:      https://github.com/iBoss21
+--     Store:       https://theluxempire.tebex.io
+-- ═══════════════════════════════════════════════════════════════════════════════
+
+name 'LXR Phonograph'
+author 'iBoss21 / The Lux Empire (Adapted from riversafe)'
+description 'Multi-Framework Music System for RedM - Place phonographs and play music'
+version '2.1.0'
+repository 'https://github.com/iBoss21/lxr-phonograph'
+
+-- ═══════════════════════════════════════════════════════════════════════════════
+-- RESOURCE FILES
 -- ═══════════════════════════════════════════════════════════════════════════════
 
 ui_page {
@@ -27,25 +52,45 @@ files {
     'html/loop.png',
 }
 
+-- ═══════════════════════════════════════════════════════════════════════════════
+-- SCRIPT LOADING ORDER
+-- ═══════════════════════════════════════════════════════════════════════════════
+
+-- Scope: Shared scripts loaded on both client and server
 shared_scripts {
-    'config.lua'
+    'config.lua',
+    'shared/framework.lua'
 }
 
+-- Scope: Client-side scripts for player interaction and UI
 client_scripts {
     'client.lua'
 }
 
+-- Scope: Server-side scripts for database, logic, and security
 server_scripts {
     '@oxmysql/lib/MySQL.lua',
     'server.lua'
 }
 
--- Dependencies
+-- ═══════════════════════════════════════════════════════════════════════════════
+-- DEPENDENCIES
+-- ═══════════════════════════════════════════════════════════════════════════════
+
 dependencies {
     '/server:4890',  -- RedM server version
-    '/onesync',
-    'oxmysql'
+    '/onesync',      -- OneSync required for proper entity synchronization
+    'oxmysql',       -- Database operations
+    'xsound'         -- Audio system
 }
 
--- Optional framework dependencies (auto-detected)
--- lxr-core, rsg-core, qbr-core, qr-core, vorp_core, redem_roleplay
+-- ═══════════════════════════════════════════════════════════════════════════════
+-- FRAMEWORK SUPPORT (Auto-detected at runtime)
+-- ═══════════════════════════════════════════════════════════════════════════════
+-- Optional framework dependencies:
+--   - lxr-core (Primary)
+--   - rsg-core (Primary)
+--   - vorp_core (Legacy Support)
+--   - qbr-core, qr-core, redem_roleplay
+--   - Standalone (no framework required)
+-- ═══════════════════════════════════════════════════════════════════════════════
