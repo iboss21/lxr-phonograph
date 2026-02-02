@@ -99,39 +99,46 @@ function Framework.Initialize()
     
     -- Initialize Core based on framework
     local success = false
-    local errorMsg = nil
+    local coreObject = nil
     
     if Framework.Name == 'lxrcore' then
-        success, errorMsg = pcall(function()
-            Framework.Core = exports['lxr-core']:GetCoreObject()
+        success, coreObject = pcall(function()
+            return exports['lxr-core']:GetCoreObject()
         end)
+        if success then Framework.Core = coreObject end
     elseif Framework.Name == 'rsg-core' then
-        success, errorMsg = pcall(function()
-            Framework.Core = exports['rsg-core']:GetCoreObject()
+        success, coreObject = pcall(function()
+            return exports['rsg-core']:GetCoreObject()
         end)
+        if success then Framework.Core = coreObject end
     elseif Framework.Name == 'qbr-core' then
-        success, errorMsg = pcall(function()
-            Framework.Core = exports['qbr-core']:GetCoreObject()
+        success, coreObject = pcall(function()
+            return exports['qbr-core']:GetCoreObject()
         end)
+        if success then Framework.Core = coreObject end
     elseif Framework.Name == 'qr-core' then
-        success, errorMsg = pcall(function()
-            Framework.Core = exports['qr-core']:GetCoreObject()
+        success, coreObject = pcall(function()
+            return exports['qr-core']:GetCoreObject()
         end)
+        if success then Framework.Core = coreObject end
     elseif Framework.Name == 'vorp' then
-        success, errorMsg = pcall(function()
-            Framework.Core = exports.vorp_core:GetCore()
+        success, coreObject = pcall(function()
+            return exports.vorp_core:GetCore()
         end)
+        if success then Framework.Core = coreObject end
     elseif Framework.Name == 'redemrp' then
-        success, errorMsg = pcall(function()
-            Framework.Core = exports.redem_roleplay:GetCoreObject()
+        success, coreObject = pcall(function()
+            return exports.redem_roleplay:GetCoreObject()
         end)
+        if success then Framework.Core = coreObject end
     elseif Framework.Name == 'standalone' then
-        -- Standalone doesn't need a core object
+        -- Standalone doesn't need a core object, initialize empty table
+        Framework.Core = {}
         success = true
     end
     
-    if not success and errorMsg then
-        print(string.format('^1[LXR-Phonograph]^7 Framework initialization error: %s', errorMsg))
+    if not success then
+        print(string.format('^1[LXR-Phonograph]^7 Framework initialization failed: %s', tostring(coreObject)))
         print(string.format('^3[LXR-Phonograph]^7 Retrying framework initialization in 2 seconds...'))
         return false
     end

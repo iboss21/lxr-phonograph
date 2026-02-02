@@ -259,22 +259,29 @@ Citizen.CreateThread(function()
         Wait(100)
     end
     
-    -- Additional small delay to ensure framework core is fully loaded
+    -- Additional delay to ensure framework core is fully loaded and ready to accept item registrations
+    -- This prevents race conditions where the framework export is available but not yet ready
     Wait(500)
     
-    print('^2[LXR-Phonograph]^7 Registering phonograph item: ^3' .. Config.PhonoItems .. '^7')
+    if Config.Debug.enabled then
+        print('^2[LXR-Phonograph]^7 Registering phonograph item: ^3' .. Config.PhonoItems .. '^7')
+    end
     
     Framework.RegisterUsableItem(Config.PhonoItems, function(src, itemData)
         local Character = Framework.GetCharacterIdentifiers(src)
         if not Character then
-            print('^1[LXR-Phonograph]^7 Failed to get character identifiers for source: ' .. src)
+            if Config.Debug.enabled then
+                print('^1[LXR-Phonograph]^7 Failed to get character identifiers for source: ' .. src)
+            end
             return
         end
 
         local identifier = Character.identifier
         local charid = Character.charIdentifier
         
-        print('^2[LXR-Phonograph]^7 Player ' .. src .. ' using phonograph item')
+        if Config.Debug.enabled then
+            print('^2[LXR-Phonograph]^7 Player ' .. src .. ' using phonograph item')
+        end
         
         -- Close inventory
         Framework.CloseInventory(src)
@@ -283,16 +290,21 @@ Citizen.CreateThread(function()
             identifier, charid
         }, function(result)
             if result and #result > 0 then
-                print('^3[LXR-Phonograph]^7 Player ' .. src .. ' already has a phonograph placed')
+                if Config.Debug.enabled then
+                    print('^3[LXR-Phonograph]^7 Player ' .. src .. ' already has a phonograph placed')
+                end
                 Framework.Notify(src, Config.Notify.Phono, Config.Notify.Already, 'error', 3000)
             else
-                print('^2[LXR-Phonograph]^7 Triggering placement for player ' .. src)
+                if Config.Debug.enabled then
+                    print('^2[LXR-Phonograph]^7 Triggering placement for player ' .. src)
+                end
                 TriggerClientEvent("rs_phonograph:client:placePropPhonograph", src)
             end
         end)
     end)
     
     print('^2[LXR-Phonograph]^7 Phonograph item registration ^2complete^7')
+end)
 end)
 
 RegisterNetEvent("rs_phonograph:givePhonograph", function()
