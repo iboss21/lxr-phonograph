@@ -1,5 +1,214 @@
-local VORPcore = exports.vorp_core:GetCore()
-local VorpInv = exports.vorp_inventory:vorp_inventoryApi()
+--[[
+    🎵 LXR Phonograph - Server Side
+    Multi-Framework Support System
+    © 2026 iBoss21 / The Lux Empire | wolves.land
+]]
+
+-- ═══════════════════════════════════════════════════════════════════════════════
+-- FRAMEWORK DETECTION & INITIALIZATION
+-- ═══════════════════════════════════════════════════════════════════════════════
+
+local Core = nil
+local FrameworkName = nil
+local InventoryAPI = nil
+
+-- Detect and initialize the framework
+local function InitializeFramework()
+    if Config.Framework ~= 'auto' then
+        FrameworkName = Config.Framework
+    else
+        -- Auto-detect framework based on priority
+        if GetResourceState('lxr-core') == 'started' then
+            FrameworkName = 'lxrcore'
+        elseif GetResourceState('rsg-core') == 'started' then
+            FrameworkName = 'rsg-core'
+        elseif GetResourceState('qbr-core') == 'started' then
+            FrameworkName = 'qbr-core'
+        elseif GetResourceState('qr-core') == 'started' then
+            FrameworkName = 'qr-core'
+        elseif GetResourceState('vorp_core') == 'started' then
+            FrameworkName = 'vorp'
+        elseif GetResourceState('redem_roleplay') == 'started' then
+            FrameworkName = 'redemrp'
+        else
+            FrameworkName = 'standalone'
+        end
+    end
+    
+    print('^2[LXR-Phonograph]^7 Detected Framework: ^3' .. FrameworkName .. '^7')
+    
+    -- Initialize Core based on framework
+    if FrameworkName == 'lxrcore' then
+        Core = exports['lxr-core']:GetCoreObject()
+    elseif FrameworkName == 'rsg-core' then
+        Core = exports['rsg-core']:GetCoreObject()
+    elseif FrameworkName == 'qbr-core' then
+        Core = exports['qbr-core']:GetCoreObject()
+    elseif FrameworkName == 'qr-core' then
+        Core = exports['qr-core']:GetCoreObject()
+    elseif FrameworkName == 'vorp' then
+        Core = exports.vorp_core:GetCore()
+    elseif FrameworkName == 'redemrp' then
+        Core = exports.redem_roleplay:GetCoreObject()
+    end
+    
+    -- Initialize Inventory API
+    if FrameworkName == 'lxrcore' and GetResourceState('lxr-inventory') == 'started' then
+        InventoryAPI = exports['lxr-inventory']:InventoryAPI()
+    elseif FrameworkName == 'rsg-core' and GetResourceState('rsg-inventory') == 'started' then
+        InventoryAPI = exports['rsg-inventory']:InventoryAPI()
+    elseif FrameworkName == 'qbr-core' and GetResourceState('qbr-inventory') == 'started' then
+        InventoryAPI = exports['qbr-inventory']:InventoryAPI()
+    elseif FrameworkName == 'qr-core' and GetResourceState('qr-inventory') == 'started' then
+        InventoryAPI = exports['qr-inventory']:InventoryAPI()
+    elseif FrameworkName == 'vorp' and GetResourceState('vorp_inventory') == 'started' then
+        InventoryAPI = exports.vorp_inventory:vorp_inventoryApi()
+    elseif FrameworkName == 'redemrp' and GetResourceState('redemrp_inventory') == 'started' then
+        InventoryAPI = exports.redemrp_inventory:InventoryAPI()
+    end
+end
+
+-- ═══════════════════════════════════════════════════════════════════════════════
+-- FRAMEWORK ABSTRACTION FUNCTIONS
+-- ═══════════════════════════════════════════════════════════════════════════════
+
+-- Get player character data
+local function GetCharacter(src)
+    if FrameworkName == 'lxrcore' or FrameworkName == 'rsg-core' or FrameworkName == 'qbr-core' or FrameworkName == 'qr-core' then
+        local Player = Core.Functions.GetPlayer(src)
+        if Player then
+            return {
+                identifier = Player.PlayerData.citizenid,
+                charIdentifier = Player.PlayerData.citizenid,
+            }
+        end
+    elseif FrameworkName == 'vorp' then
+        local User = Core.getUser(src)
+        if User then
+            local Character = User.getUsedCharacter
+            if Character then
+                return {
+                    identifier = Character.identifier,
+                    charIdentifier = Character.charIdentifier,
+                }
+            end
+        end
+    elseif FrameworkName == 'redemrp' then
+        local Player = Core.GetPlayer(src)
+        if Player then
+            return {
+                identifier = Player.getIdentifier(),
+                charIdentifier = Player.getSessionVar("charid"),
+            }
+        end
+    elseif FrameworkName == 'standalone' then
+        -- For standalone, use steam identifier
+        local identifiers = GetPlayerIdentifiers(src)
+        local identifier = nil
+        for _, id in pairs(identifiers) do
+            if string.find(id, "steam:") then
+                identifier = id
+                break
+            end
+        end
+        return {
+            identifier = identifier or "unknown",
+            charIdentifier = identifier or "unknown",
+        }
+    end
+    return nil
+end
+
+-- Send notification to player
+local function Notify(src, title, message, type, duration)
+    if FrameworkName == 'lxrcore' then
+        Core.Functions.Notify(src, message, type or 'primary', duration or 3000)
+    elseif FrameworkName == 'rsg-core' then
+        Core.Functions.Notify(src, message, type or 'primary', duration or 3000)
+    elseif FrameworkName == 'qbr-core' or FrameworkName == 'qr-core' then
+        TriggerClientEvent('QBCore:Notify', src, message, type or 'primary', duration or 3000)
+    elseif FrameworkName == 'vorp' then
+        local notifType = type == 'success' and 'COLOR_GREEN' or (type == 'error' and 'COLOR_RED' or 'COLOR_WHITE')
+        local icon = type == 'success' and 'tick' or (type == 'error' and 'cross' or 'tick')
+        local texture = type == 'error' and 'menu_textures' or 'generic_textures'
+        Core.NotifyLeft(src, title, message, texture, icon, duration or 3000, notifType)
+    elseif FrameworkName == 'redemrp' then
+        TriggerClientEvent('redem_roleplay:Notify', src, message, type or 'success', duration or 3000)
+    elseif FrameworkName == 'standalone' then
+        TriggerClientEvent('chat:addMessage', src, {
+            args = {title, message}
+        })
+    end
+end
+
+-- Add item to player inventory
+local function AddItem(src, item, amount)
+    if InventoryAPI then
+        if FrameworkName == 'vorp' then
+            InventoryAPI.addItem(src, item, amount)
+        elseif FrameworkName == 'lxrcore' or FrameworkName == 'rsg-core' or FrameworkName == 'qbr-core' or FrameworkName == 'qr-core' then
+            local Player = Core.Functions.GetPlayer(src)
+            if Player then
+                Player.Functions.AddItem(item, amount)
+            end
+        elseif FrameworkName == 'redemrp' then
+            local Player = Core.GetPlayer(src)
+            if Player then
+                Player.addItem(item, amount)
+            end
+        end
+    end
+end
+
+-- Remove item from player inventory
+local function RemoveItem(src, item, amount)
+    if InventoryAPI then
+        if FrameworkName == 'vorp' then
+            InventoryAPI.subItem(src, item, amount)
+        elseif FrameworkName == 'lxrcore' or FrameworkName == 'rsg-core' or FrameworkName == 'qbr-core' or FrameworkName == 'qr-core' then
+            local Player = Core.Functions.GetPlayer(src)
+            if Player then
+                Player.Functions.RemoveItem(item, amount)
+            end
+        elseif FrameworkName == 'redemrp' then
+            local Player = Core.GetPlayer(src)
+            if Player then
+                Player.removeItem(item, amount)
+            end
+        end
+    end
+end
+
+-- Register usable item
+local function RegisterUsableItem(item, callback)
+    if InventoryAPI then
+        if FrameworkName == 'vorp' then
+            InventoryAPI.RegisterUsableItem(item, callback)
+        elseif FrameworkName == 'lxrcore' or FrameworkName == 'rsg-core' or FrameworkName == 'qbr-core' or FrameworkName == 'qr-core' then
+            Core.Functions.CreateUseableItem(item, function(source)
+                callback({source = source})
+            end)
+        elseif FrameworkName == 'redemrp' then
+            -- RedEM:RP item usage
+            Core.RegisterUseItem(item, function(source)
+                callback({source = source})
+            end)
+        end
+    end
+end
+
+-- ═══════════════════════════════════════════════════════════════════════════════
+-- INITIALIZE ON RESOURCE START
+-- ═══════════════════════════════════════════════════════════════════════════════
+
+Citizen.CreateThread(function()
+    InitializeFramework()
+end)
+
+-- ═══════════════════════════════════════════════════════════════════════════════
+-- PHONOGRAPH SYSTEM
+-- ═══════════════════════════════════════════════════════════════════════════════
+
 local currentlyPlaying = {}
 
 RegisterNetEvent('rs_phonograph:server:playMusic')
@@ -95,10 +304,7 @@ end)
 RegisterNetEvent('rs_phonograph:server:saveOwner')
 AddEventHandler('rs_phonograph:server:saveOwner', function(coords, rotation)
     local src = source
-    local User = VORPcore.getUser(src)
-    if not User then return end
-
-    local Character = User.getUsedCharacter
+    local Character = GetCharacter(src)
     if not Character then return end
 
     local u_identifier = Character.identifier
@@ -142,10 +348,7 @@ end)
 RegisterNetEvent('rs_phonograph:server:pickUpByOwner')
 AddEventHandler('rs_phonograph:server:pickUpByOwner', function(uniqueId)
     local src = source
-    local User = VORPcore.getUser(src)
-    if not User then return end
-
-    local Character = User.getUsedCharacter
+    local Character = GetCharacter(src)
     if not Character then return end
 
     local u_identifier = Character.identifier
@@ -181,38 +384,42 @@ AddEventHandler('rs_phonograph:server:pickUpByOwner', function(uniqueId)
                         function(result)
                             local affected = result and (result.affectedRows or result.affected_rows or result.changes)
                             if affected and affected > 0 then
-                                VorpInv.addItem(src, Config.PhonoItems, 1)
-                                VORPcore.NotifyLeft(src, Config.Notify.Phono, Config.Notify.Picked, "generic_textures", "tick", 4000, "COLOR_GREEN")
+                                AddItem(src, Config.PhonoItems, 1)
+                                Notify(src, Config.Notify.Phono, Config.Notify.Picked, 'success', 4000)
                             end
                         end
                     )
                 else
-                    VORPcore.NotifyLeft(src, Config.Notify.Phono, Config.Notify.TooFar, "menu_textures", "cross", 3000, "COLOR_RED")
+                    Notify(src, Config.Notify.Phono, Config.Notify.TooFar, 'error', 3000)
                 end
             else
-                VORPcore.NotifyLeft(src, Config.Notify.Phono, Config.Notify.Dont, "menu_textures", "cross", 3000, "COLOR_RED")
+                Notify(src, Config.Notify.Phono, Config.Notify.Dont, 'error', 3000)
             end
         end
     )
 end)
 
-VorpInv.RegisterUsableItem(Config.PhonoItems, function(data)
+RegisterUsableItem(Config.PhonoItems, function(data)
     local src = data.source
 
-    local User = VORPcore.getUser(src)
-    if not User then return end
-    local Character = User.getUsedCharacter
+    local Character = GetCharacter(src)
     if not Character then return end
 
     local identifier = Character.identifier
     local charid = Character.charIdentifier
-    VorpInv.CloseInv(src)
+    
+    -- Close inventory
+    if InventoryAPI and FrameworkName == 'vorp' then
+        InventoryAPI.CloseInv(src)
+    elseif FrameworkName == 'lxrcore' or FrameworkName == 'rsg-core' or FrameworkName == 'qbr-core' or FrameworkName == 'qr-core' then
+        TriggerClientEvent('inventory:client:closeInv', src)
+    end
 
     exports.oxmysql:execute('SELECT id FROM phonographs WHERE owner_identifier = ? AND owner_charid = ?', {
         identifier, charid
     }, function(result)
         if result and #result > 0 then
-            VORPcore.NotifyLeft(src, Config.Notify.Phono, Config.Notify.Already, "menu_textures", "cross", 3000, "COLOR_RED")
+            Notify(src, Config.Notify.Phono, Config.Notify.Already, 'error', 3000)
         else
             TriggerClientEvent("rs_phonograph:client:placePropPhonograph", src)
         end
@@ -221,5 +428,5 @@ end)
 
 RegisterNetEvent("rs_phonograph:givePhonograph", function()
     local src = source
-    VorpInv.subItem(src, Config.PhonoItems, 1)
+    RemoveItem(src, Config.PhonoItems, 1)
 end)

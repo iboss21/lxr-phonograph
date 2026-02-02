@@ -1,4 +1,226 @@
+--[[
+    ██╗      █████╗ ███╗   ██╗██████╗      ██████╗ ███████╗    ██╗    ██╗ ██████╗ ██╗    ██╗   ██╗███████╗███████╗
+    ██║     ██╔══██╗████╗  ██║██╔══██╗    ██╔═══██╗██╔════╝    ██║    ██║██╔═══██╗██║    ██║   ██║██╔════╝██╔════╝
+    ██║     ███████║██╔██╗ ██║██║  ██║    ██║   ██║█████╗      ██║ █╗ ██║██║   ██║██║    ██║   ██║█████╗  ███████╗
+    ██║     ██╔══██║██║╚██╗██║██║  ██║    ██║   ██║██╔══╝      ██║███╗██║██║   ██║██║    ╚██╗ ██╔╝██╔══╝  ╚════██║
+    ███████╗██║  ██║██║ ╚████║██████╔╝    ╚██████╔╝██║         ╚███╔███╔╝╚██████╔╝███████╗╚████╔╝ ███████╗███████║
+    ╚══════╝╚═╝  ╚═╝╚═╝  ╚═══╝╚═════╝      ╚═════╝ ╚═╝          ╚══╝╚══╝  ╚═════╝ ╚══════╝ ╚═══╝  ╚══════╝╚══════╝
+                                                                                                                    
+    🎵 LXR Phonograph System - Configuration
+    
+    This configuration file controls all aspects of the phonograph music system.
+    Players can place phonographs, play music from URLs or song lists, and enjoy synchronized audio.
+    
+    ═══════════════════════════════════════════════════════════════════════════════
+    SERVER INFORMATION
+    ═══════════════════════════════════════════════════════════════════════════════
+    
+    Server:      The Land of Wolves 🐺
+    Tagline:     Georgian RP 🇬🇪 | მგლების მიწა - რჩეულთა ადგილი!
+    Description: ისტორია ცოცხლდება აქ! (History Lives Here!)
+    Type:        Serious Hardcore Roleplay
+    Access:      Discord & Whitelisted
+    
+    Developer:   iBoss21 / The Lux Empire
+    Website:     https://www.wolves.land
+    Discord:     https://discord.gg/CrKcWdfd3A
+    GitHub:      https://github.com/iBoss21
+    Store:       https://theluxempire.tebex.io
+    Server:      https://servers.redm.net/servers/detail/8gj7eb
+    
+    Original:    riversafe (rs_phonograph)
+    Adapted by:  iBoss21 / The Lux Empire for The Land of Wolves
+    
+    ═══════════════════════════════════════════════════════════════════════════════
+    
+    Version: 2.0.0
+    Performance Target: Optimized for minimal server overhead and client FPS impact
+    
+    Tags: RedM, Georgian, SeriousRP, Whitelist, Phonograph, Music, Audio, Entertainment
+    
+    Framework Support:
+    - LXRCore (Primary)
+    - RSG Core (Primary)
+    - VORP Core (Legacy)
+    - RedEM:RP
+    - QBR Core
+    - QR Core
+    - Standalone
+    
+    ═══════════════════════════════════════════════════════════════════════════════
+    CREDITS
+    ═══════════════════════════════════════════════════════════════════════════════
+    
+    Original Script: riversafe (rs_phonograph V2)
+    Framework Adaptation: iBoss21 / The Lux Empire for The Land of Wolves
+    
+    © 2026 iBoss21 / The Lux Empire | wolves.land | All Rights Reserved
+]]
+
+-- ═══════════════════════════════════════════════════════════════════════════════
+-- 🐺 RESOURCE NAME PROTECTION - RUNTIME CHECK
+-- ═══════════════════════════════════════════════════════════════════════════════
+-- Additional safeguard: Verify resource name at config load time
+-- This prevents the script from functioning if renamed
+-- ═══════════════════════════════════════════════════════════════════════════════
+
+local REQUIRED_RESOURCE_NAME = "lxr-phonograph"
+local currentResourceName = GetCurrentResourceName()
+
+if currentResourceName ~= REQUIRED_RESOURCE_NAME then
+    error(string.format([[
+        
+        ═══════════════════════════════════════════════════════════════════════════════
+        ❌ CRITICAL ERROR: RESOURCE NAME MISMATCH ❌
+        ═══════════════════════════════════════════════════════════════════════════════
+        
+        Expected: %s
+        Got: %s
+        
+        This resource is branded and must maintain the correct name.
+        Rename the folder to "%s" to continue.
+        
+        🐺 wolves.land - The Land of Wolves
+        
+        ═══════════════════════════════════════════════════════════════════════════════
+        
+    ]], REQUIRED_RESOURCE_NAME, currentResourceName, REQUIRED_RESOURCE_NAME))
+end
+
 Config = {}
+
+-- ████████████████████████████████████████████████████████████████████████████████
+-- ████████████████████████ SERVER BRANDING & INFO ████████████████████████████████
+-- ████████████████████████████████████████████████████████████████████████████████
+
+Config.ServerInfo = {
+    name = 'The Land of Wolves 🐺',
+    tagline = 'Georgian RP 🇬🇪 | მგლების მიწა - რჩეულთა ადგილი!',
+    description = 'ისტორია ცოცხლდება აქ!', -- History Lives Here!
+    type = 'Serious Hardcore Roleplay',
+    access = 'Discord & Whitelisted',
+    
+    -- Contact & Links
+    website = 'https://www.wolves.land',
+    discord = 'https://discord.gg/CrKcWdfd3A',
+    github = 'https://github.com/iBoss21',
+    store = 'https://theluxempire.tebex.io',
+    serverListing = 'https://servers.redm.net/servers/detail/8gj7eb',
+    
+    -- Developer Info
+    developer = 'iBoss21 / The Lux Empire',
+    
+    -- Tags
+    tags = {'RedM', 'Georgian', 'SeriousRP', 'Whitelist', 'Phonograph', 'Music', 'Audio', 'Entertainment'}
+}
+
+-- ████████████████████████████████████████████████████████████████████████████████
+-- ████████████████████████ FRAMEWORK CONFIGURATION ███████████████████████████████
+-- ████████████████████████████████████████████████████████████████████████████████
+
+--[[
+    Framework Priority (in order):
+    1. LXRCore (Primary) - https://github.com/lxrcore - The Land of Wolves
+    2. RSG-Core (Primary) - https://github.com/Rexshack-RedM
+    3. QBR Core - QB-Core for RedM
+    4. QR Core - QR Core Framework
+    5. VORP Core (Legacy Support)
+    6. RedEM:RP (Legacy Support)
+    7. Standalone (No Framework)
+    
+    The script will auto-detect which framework is running.
+    Set Config.Framework to override auto-detection.
+]]
+
+Config.Framework = 'auto' -- Options: 'auto', 'lxrcore', 'rsg-core', 'qbr-core', 'qr-core', 'vorp', 'redemrp', 'standalone'
+
+-- Framework-specific resource names and triggers
+Config.FrameworkSettings = {
+    lxrcore = {
+        enabled = true,
+        resource = 'lxr-core',
+        exportName = 'lxr-core',
+        getSharedObject = 'lxr-core:getSharedObject',
+        playerLoaded = 'LXR:Client:OnPlayerLoaded',
+        playerUnloaded = 'LXR:Client:OnPlayerUnload',
+        jobUpdate = 'LXR:Client:OnJobUpdate',
+        notification = 'lxr', -- 'lxr', 'vorp', 'native'
+        inventory = 'lxr-inventory',
+        inputResource = 'lxr-input',
+    },
+    ['rsg-core'] = {
+        enabled = true,
+        resource = 'rsg-core',
+        exportName = 'rsg-core',
+        getSharedObject = 'rsg-core:getSharedObject',
+        playerLoaded = 'RSGCore:Client:OnPlayerLoaded',
+        playerUnloaded = 'RSGCore:Client:OnPlayerUnload',
+        jobUpdate = 'RSGCore:Client:OnJobUpdate',
+        notification = 'rsg',
+        inventory = 'rsg-inventory',
+        inputResource = 'rsg-input',
+    },
+    ['qbr-core'] = {
+        enabled = true,
+        resource = 'qbr-core',
+        exportName = 'qbr-core',
+        getSharedObject = 'qbr-core:getSharedObject',
+        playerLoaded = 'QBCore:Client:OnPlayerLoaded',
+        playerUnloaded = 'QBCore:Client:OnPlayerUnload',
+        jobUpdate = 'QBCore:Client:OnJobUpdate',
+        notification = 'qb',
+        inventory = 'qbr-inventory',
+        inputResource = 'qb-input',
+    },
+    ['qr-core'] = {
+        enabled = true,
+        resource = 'qr-core',
+        exportName = 'qr-core',
+        getSharedObject = 'qr-core:getSharedObject',
+        playerLoaded = 'QR:Client:OnPlayerLoaded',
+        playerUnloaded = 'QR:Client:OnPlayerUnload',
+        jobUpdate = 'QR:Client:OnJobUpdate',
+        notification = 'qr',
+        inventory = 'qr-inventory',
+        inputResource = 'qr-input',
+    },
+    vorp = {
+        enabled = true,
+        resource = 'vorp_core',
+        exportName = 'vorp_core',
+        getSharedObject = 'vorp:getSharedObject',
+        playerLoaded = 'vorp:SelectedCharacter',
+        playerUnloaded = 'vorp:PlayerLogout',
+        jobUpdate = 'vorp:updateJob',
+        notification = 'vorp',
+        inventory = 'vorp_inventory',
+        inputResource = 'vorp_inputs',
+    },
+    redemrp = {
+        enabled = true,
+        resource = 'redem_roleplay',
+        exportName = 'redem_roleplay',
+        getSharedObject = 'redem:getSharedObject',
+        playerLoaded = 'RedEM:PlayerLoaded',
+        playerUnloaded = 'RedEM:PlayerUnload',
+        jobUpdate = 'RedEM:JobUpdate',
+        notification = 'redemrp',
+        inventory = 'redemrp_inventory',
+        inputResource = 'redemrp_input',
+    },
+    standalone = {
+        enabled = true,
+        resource = nil,
+        exportName = nil,
+        notification = 'native',
+        inventory = nil,
+        inputResource = nil,
+    }
+}
+
+-- ████████████████████████████████████████████████████████████████████████████████
+-- ████████████████████████ GENERAL PHONOGRAPH SETTINGS ███████████████████████████
+-- ████████████████████████████████████████████████████████████████████████████████
 
 Config.PhonoItems = "phonograph"
 

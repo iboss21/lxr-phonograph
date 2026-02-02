@@ -1,3 +1,192 @@
+--[[
+    🎵 LXR Phonograph - Client Side
+    Multi-Framework Support System
+    © 2026 iBoss21 / The Lux Empire | wolves.land
+]]
+
+-- ═══════════════════════════════════════════════════════════════════════════════
+-- FRAMEWORK DETECTION & INITIALIZATION
+-- ═══════════════════════════════════════════════════════════════════════════════
+
+local Core = nil
+local FrameworkName = nil
+local PlayerLoaded = false
+
+-- Detect and initialize the framework
+local function InitializeFramework()
+    if Config.Framework ~= 'auto' then
+        FrameworkName = Config.Framework
+    else
+        -- Auto-detect framework based on priority
+        if GetResourceState('lxr-core') == 'started' then
+            FrameworkName = 'lxrcore'
+        elseif GetResourceState('rsg-core') == 'started' then
+            FrameworkName = 'rsg-core'
+        elseif GetResourceState('qbr-core') == 'started' then
+            FrameworkName = 'qbr-core'
+        elseif GetResourceState('qr-core') == 'started' then
+            FrameworkName = 'qr-core'
+        elseif GetResourceState('vorp_core') == 'started' then
+            FrameworkName = 'vorp'
+        elseif GetResourceState('redem_roleplay') == 'started' then
+            FrameworkName = 'redemrp'
+        else
+            FrameworkName = 'standalone'
+        end
+    end
+    
+    print('^2[LXR-Phonograph]^7 Client Framework: ^3' .. FrameworkName .. '^7')
+    
+    -- Initialize Core based on framework
+    if FrameworkName == 'lxrcore' then
+        Core = exports['lxr-core']:GetCoreObject()
+    elseif FrameworkName == 'rsg-core' then
+        Core = exports['rsg-core']:GetCoreObject()
+    elseif FrameworkName == 'qbr-core' then
+        Core = exports['qbr-core']:GetCoreObject()
+    elseif FrameworkName == 'qr-core' then
+        Core = exports['qr-core']:GetCoreObject()
+    elseif FrameworkName == 'vorp' then
+        Core = exports.vorp_core:GetCore()
+    elseif FrameworkName == 'redemrp' then
+        Core = exports.redem_roleplay:GetCoreObject()
+    end
+end
+
+-- Register player loaded event based on framework
+local function RegisterPlayerLoadedEvent()
+    if FrameworkName == 'lxrcore' then
+        RegisterNetEvent('LXR:Client:OnPlayerLoaded', function()
+            PlayerLoaded = true
+            TriggerServerEvent('rs_phonograph:server:syncMusic')
+        end)
+    elseif FrameworkName == 'rsg-core' then
+        RegisterNetEvent('RSGCore:Client:OnPlayerLoaded', function()
+            PlayerLoaded = true
+            TriggerServerEvent('rs_phonograph:server:syncMusic')
+        end)
+    elseif FrameworkName == 'qbr-core' then
+        RegisterNetEvent('QBCore:Client:OnPlayerLoaded', function()
+            PlayerLoaded = true
+            TriggerServerEvent('rs_phonograph:server:syncMusic')
+        end)
+    elseif FrameworkName == 'qr-core' then
+        RegisterNetEvent('QR:Client:OnPlayerLoaded', function()
+            PlayerLoaded = true
+            TriggerServerEvent('rs_phonograph:server:syncMusic')
+        end)
+    elseif FrameworkName == 'vorp' then
+        RegisterNetEvent("vorp:SelectedCharacter", function()
+            PlayerLoaded = true
+            TriggerServerEvent('rs_phonograph:server:syncMusic')
+        end)
+    elseif FrameworkName == 'redemrp' then
+        RegisterNetEvent('RedEM:PlayerLoaded', function()
+            PlayerLoaded = true
+            TriggerServerEvent('rs_phonograph:server:syncMusic')
+        end)
+    elseif FrameworkName == 'standalone' then
+        -- For standalone, consider player as always loaded
+        PlayerLoaded = true
+    end
+end
+
+-- ═══════════════════════════════════════════════════════════════════════════════
+-- FRAMEWORK ABSTRACTION FUNCTIONS
+-- ═══════════════════════════════════════════════════════════════════════════════
+
+-- Send notification to player
+local function Notify(title, message, type, duration)
+    if FrameworkName == 'lxrcore' then
+        Core.Functions.Notify(message, type or 'primary', duration or 3000)
+    elseif FrameworkName == 'rsg-core' then
+        Core.Functions.Notify(message, type or 'primary', duration or 3000)
+    elseif FrameworkName == 'qbr-core' or FrameworkName == 'qr-core' then
+        Core.Functions.Notify(message, type or 'primary', duration or 3000)
+    elseif FrameworkName == 'vorp' then
+        local notifType = type == 'success' and 'COLOR_GREEN' or (type == 'error' and 'COLOR_RED' or 'COLOR_WHITE')
+        local icon = type == 'success' and 'tick' or (type == 'error' and 'cross' or 'tick')
+        local texture = type == 'error' and 'menu_textures' or 'generic_textures'
+        TriggerEvent("vorp:NotifyLeft", title, message, texture, icon, duration or 3000, notifType)
+    elseif FrameworkName == 'redemrp' then
+        TriggerEvent('redem_roleplay:Notify', message, type or 'success', duration or 3000)
+    elseif FrameworkName == 'standalone' then
+        -- Native notification
+        BeginTextCommandThefeedPost('STRING')
+        AddTextComponentSubstringPlayerName(message)
+        EndTextCommandThefeedPostTicker(false, true)
+    end
+end
+
+-- Show input dialog (for speed adjustment)
+local function ShowInput(data)
+    if FrameworkName == 'vorp' then
+        local myInput = {
+            type = "enableinput",
+            inputType = "input",
+            button = data.button or Config.Input.Confirm,
+            placeholder = data.placeholder or Config.Input.MinMax,
+            style = "block",
+            attributes = {
+                inputHeader = data.header or Config.Input.Speed,
+                type = "text",
+                pattern = "[0-9.]+",
+                title = data.title or Config.Input.Change,
+                style = "border-radius: 10px; background-color: ; border:none;"
+            }
+        }
+        return exports.vorp_inputs:advancedInput(myInput)
+    elseif FrameworkName == 'lxrcore' and GetResourceState('lxr-input') == 'started' then
+        local result = exports['lxr-input']:ShowInput({
+            header = data.header or Config.Input.Speed,
+            submitText = data.button or Config.Input.Confirm,
+            inputs = {
+                {
+                    text = data.placeholder or Config.Input.MinMax,
+                    name = "value",
+                    type = "number",
+                    isRequired = true
+                }
+            }
+        })
+        if result then
+            return result.value
+        end
+    elseif FrameworkName == 'rsg-core' and GetResourceState('rsg-input') == 'started' then
+        local result = exports['rsg-input']:ShowInput({
+            header = data.header or Config.Input.Speed,
+            submitText = data.button or Config.Input.Confirm,
+            inputs = {
+                {
+                    text = data.placeholder or Config.Input.MinMax,
+                    name = "value",
+                    type = "number",
+                    isRequired = true
+                }
+            }
+        })
+        if result then
+            return result.value
+        end
+    else
+        -- Fallback: use a simple hardcoded value or skip input
+        return "0.05"
+    end
+end
+
+-- ═══════════════════════════════════════════════════════════════════════════════
+-- INITIALIZE ON RESOURCE START
+-- ═══════════════════════════════════════════════════════════════════════════════
+
+Citizen.CreateThread(function()
+    InitializeFramework()
+    RegisterPlayerLoadedEvent()
+end)
+
+-- ═══════════════════════════════════════════════════════════════════════════════
+-- PHONOGRAPH SYSTEM
+-- ═══════════════════════════════════════════════════════════════════════════════
+
 local volume = 0.3
 local loopEnabled = false
 local nuiOpen = false
@@ -30,9 +219,9 @@ end
 RegisterNUICallback("playUrl", function(data, cb)
     if data.url and data.url:sub(1, 4) == "http" then
         TriggerServerEvent('rs_phonograph:server:playMusic', closestId, GetEntityCoords(closestEntity), data.url, volume)
-        TriggerEvent("vorp:NotifyLeft", Config.Notify.Phono, Config.Notify.PlayMessage, "generic_textures", "tick", 1500, "COLOR_GREEN")
+        Notify(Config.Notify.Phono, Config.Notify.PlayMessage, "success", 1500)
     else
-        TriggerEvent("vorp:NotifyLeft", Config.Notify.Phono, Config.Notify.InvalidUrlMessage, "menu_textures", "cross", 500, "COLOR_RED")
+        Notify(Config.Notify.Phono, Config.Notify.InvalidUrlMessage, "error", 500)
     end
     cb({})
 end)
@@ -40,14 +229,14 @@ end)
 RegisterNUICallback("playSelected", function(data, cb)
     if data.url then
         TriggerServerEvent('rs_phonograph:server:playMusic', closestId, GetEntityCoords(closestEntity), data.url, volume)
-        TriggerEvent("vorp:NotifyLeft", Config.Notify.Phono, Config.Notify.PlaySelect, "generic_textures", "tick", 1500, "COLOR_GREEN")
+        Notify(Config.Notify.Phono, Config.Notify.PlaySelect, "success", 1500)
     end
     cb({})
 end)
 
 RegisterNUICallback("stopAudio", function(_, cb)
     TriggerServerEvent('rs_phonograph:server:stopMusic', closestId)
-    TriggerEvent("vorp:NotifyLeft", Config.Notify.Phono, Config.Notify.StopMessage, "menu_textures", "cross", 500, "COLOR_RED")
+    Notify(Config.Notify.Phono, Config.Notify.StopMessage, "error", 500)
     cb({})
 end)
 
@@ -164,7 +353,7 @@ Citizen.CreateThread(function()
                 if closestId then
                     openNui()
                 else
-                    TriggerEvent("vorp:NotifyLeft", Config.Notify.Phono, Config.Notify.UnregisteredMessage, "generic_textures", "tick", 3000, "COLOR_GREEN")
+                    Notify(Config.Notify.Phono, Config.Notify.UnregisteredMessage, "success", 3000)
                 end
             end
 
@@ -172,7 +361,7 @@ Citizen.CreateThread(function()
                 if closestId then
                     TriggerServerEvent('rs_phonograph:server:pickUpByOwner', closestId)
                 else
-                    TriggerEvent("vorp:NotifyLeft", Config.Notify.Phono, Config.Notify.UnregisteredMessage, "generic_textures", "tick", 3000, "COLOR_GREEN")
+                    Notify(Config.Notify.Phono, Config.Notify.UnregisteredMessage, "success", 3000)
                 end
             end
         else
@@ -242,22 +431,13 @@ AddEventHandler('rs_phonograph:client:placePropPhonograph', function()
             if IsDisabledControlJustPressed(0,Config.Keys.rotateRightZ) then heading = heading - 5; moved = true end
 
             if IsDisabledControlJustPressed(0,Config.Keys.speedPlace) then
-                local myInput = {
-                    type = "enableinput",
-                    inputType = "input",
+                local result = ShowInput({
                     button = Config.Input.Confirm,
                     placeholder = Config.Input.MinMax,
-                    style = "block",
-                    attributes = {
-                        inputHeader = Config.Input.Speed,
-                        type = "text",
-                        pattern = "[0-9.]+",
-                        title = Config.Input.Change,
-                        style = "border-radius: 10px; background-color: ; border:none;"
-                    }
-                }
-
-                local result = exports.vorp_inputs:advancedInput(myInput)
+                    header = Config.Input.Speed,
+                    title = Config.Input.Change,
+                })
+                
                 if result and result ~= "" then
                     local testint = tonumber(result)
                     if testint and testint ~= 0 then
@@ -287,7 +467,7 @@ AddEventHandler('rs_phonograph:client:placePropPhonograph', function()
                 TriggerServerEvent('rs_phonograph:server:saveOwner', pos, rot)
                 TriggerServerEvent("rs_phonograph:givePhonograph")
 
-                TriggerEvent("vorp:NotifyLeft", Config.Notify.Phono, Config.Notify.Place, "generic_textures", "tick", 2000, "COLOR_GREEN")
+                Notify(Config.Notify.Phono, Config.Notify.Place, "success", 2000)
             end
 
             if IsDisabledControlJustPressed(0,Config.Keys.cancelPlace) then
@@ -300,7 +480,7 @@ AddEventHandler('rs_phonograph:client:placePropPhonograph', function()
 
                 lastPlacedPhonograph = nil
 
-                TriggerEvent("vorp:NotifyLeft", Config.Notify.Phono, Config.Notify.Cancel, "menu_textures", "cross", 2000, "COLOR_RED")
+                Notify(Config.Notify.Phono, Config.Notify.Cancel, "error", 2000)
             end
         end
     end)
@@ -387,11 +567,6 @@ AddEventHandler('rs_phonograph:client:playMusic', function(uniqueId, coords, url
     end
 end)
 
-RegisterNetEvent("vorp:SelectedCharacter")
-AddEventHandler("vorp:SelectedCharacter", function()
-    TriggerServerEvent('rs_phonograph:server:syncMusic')
-end)
-
 RegisterNetEvent('rs_phonograph:client:stopMusic')
 AddEventHandler('rs_phonograph:client:stopMusic', function(uniqueId)
     local soundName = getSoundName(uniqueId)
@@ -450,9 +625,9 @@ end)
 RegisterNetEvent('rs_phonograph:client:notifyLoop')
 AddEventHandler('rs_phonograph:client:notifyLoop', function(state)
     if state then
-        TriggerEvent("vorp:NotifyLeft", Config.Notify.Phono, Config.Notify.LoopOnMessage, "generic_textures", "tick", 3000, "COLOR_GREEN")
+        Notify(Config.Notify.Phono, Config.Notify.LoopOnMessage, "success", 3000)
     else
-        TriggerEvent("vorp:NotifyLeft", Config.Notify.Phono, Config.Notify.LoopOffMessage, "menu_textures", "cross", 3000, "COLOR_RED")
+        Notify(Config.Notify.Phono, Config.Notify.LoopOffMessage, "error", 3000)
     end
 end)
 
