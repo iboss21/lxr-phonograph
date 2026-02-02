@@ -49,7 +49,9 @@ The script automatically detects your framework and adapts accordingly:
 ✅ **Loop Function**: Repeat songs automatically  
 ✅ **Volume Control**: Adjustable volume per phonograph  
 ✅ **Ownership System**: Players can place and collect their phonographs  
-✅ **3D Sound**: Positional audio with distance attenuation
+✅ **3D Sound**: Positional audio with distance attenuation  
+✅ **Visual Placement Gizmo**: Ground marker and 3D text for precise placement  
+✅ **Confirmation Prompt**: Double-confirm placement to prevent accidental placement
 
 ---
 
@@ -105,8 +107,11 @@ The script includes extensive configuration options in `config.lua`:
    - `1/2` - Rotate object
    - `7/8` - Raise/Lower height
    - `3` - Adjust placement speed
-   - `ENTER` - Confirm placement
-   - `G` - Cancel placement
+   - **Visual Gizmo**: A golden ground marker shows exact placement location
+   - **3D Text**: Placement instructions displayed above the phonograph
+   - `ENTER` - Show confirmation prompt
+   - `ENTER` (again) - Confirm and place the phonograph
+   - `G` - Cancel placement or confirmation
 4. **Interact** with placed phonograph:
    - `G` - Open music menu
    - `R` - Collect phonograph (owner only)
@@ -152,6 +157,14 @@ Thank you for your support! ❤️
 ---
 
 ### Changelog
+
+#### V2.1.0 - Enhanced Placement System
+- ✨ Added visual placement gizmo with ground marker
+- ✨ Added 3D text instructions during placement
+- ✨ Added confirmation prompt before placing phonograph
+- ✨ Increased object visibility during placement (alpha 200)
+- 🐛 Fixed issue where items appeared used but weren't placed
+- 🔧 Improved placement UX with better visual feedback
 
 #### V2.0.0 - Multi-Framework Edition
 - ✨ Added support for LXRCore (primary)
