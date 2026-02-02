@@ -13,4 +13,4 @@ CREATE TABLE IF NOT EXISTS `phonographs` (
 
 
 INSERT IGNORE INTO `items` (`item`, `label`, `limit`, `can_remove`, `type`, `usable`, `metadata`, `desc`, `weight`) VALUES
-("phonograph", "Phonograph", 200, 1, "item_standard", 1, "{}", "Used to play music", 0.1);
+("lxr_phonograph", "Antique Phonograph", 200, 1, "item_standard", 1, "{}", "An antique phonograph used to play music. Place it on the ground to enjoy period sounds.", 15);
