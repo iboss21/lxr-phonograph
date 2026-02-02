@@ -98,22 +98,47 @@ function Framework.Initialize()
     Framework.Detect()
     
     -- Initialize Core based on framework
+    local success = false
+    local errorMsg = nil
+    
     if Framework.Name == 'lxrcore' then
-        Framework.Core = exports['lxr-core']:GetCoreObject()
+        success, errorMsg = pcall(function()
+            Framework.Core = exports['lxr-core']:GetCoreObject()
+        end)
     elseif Framework.Name == 'rsg-core' then
-        Framework.Core = exports['rsg-core']:GetCoreObject()
+        success, errorMsg = pcall(function()
+            Framework.Core = exports['rsg-core']:GetCoreObject()
+        end)
     elseif Framework.Name == 'qbr-core' then
-        Framework.Core = exports['qbr-core']:GetCoreObject()
+        success, errorMsg = pcall(function()
+            Framework.Core = exports['qbr-core']:GetCoreObject()
+        end)
     elseif Framework.Name == 'qr-core' then
-        Framework.Core = exports['qr-core']:GetCoreObject()
+        success, errorMsg = pcall(function()
+            Framework.Core = exports['qr-core']:GetCoreObject()
+        end)
     elseif Framework.Name == 'vorp' then
-        Framework.Core = exports.vorp_core:GetCore()
+        success, errorMsg = pcall(function()
+            Framework.Core = exports.vorp_core:GetCore()
+        end)
     elseif Framework.Name == 'redemrp' then
-        Framework.Core = exports.redem_roleplay:GetCoreObject()
+        success, errorMsg = pcall(function()
+            Framework.Core = exports.redem_roleplay:GetCoreObject()
+        end)
+    elseif Framework.Name == 'standalone' then
+        -- Standalone doesn't need a core object
+        success = true
+    end
+    
+    if not success and errorMsg then
+        print(string.format('^1[LXR-Phonograph]^7 Framework initialization error: %s', errorMsg))
+        print(string.format('^3[LXR-Phonograph]^7 Retrying framework initialization in 2 seconds...'))
+        return false
     end
     
     Framework.IsReady = true
-    print(string.format('^2[LXR-Phonograph]^7 Framework Adapter: ^2Ready^7'))
+    print(string.format('^2[LXR-Phonograph]^7 Framework Adapter: ^2Ready^7 (Framework: %s)', Framework.Name))
+    return true
 end
 
 -- ════════════════════════════════════════════════════════════════════════════════
@@ -419,7 +444,25 @@ end
 -- ════════════════════════════════════════════════════════════════════════════════
 
 Citizen.CreateThread(function()
-    Framework.Initialize()
+    -- Retry initialization until successful
+    local maxRetries = 10
+    local retryCount = 0
+    local retryDelay = 2000 -- 2 seconds
+    
+    while retryCount < maxRetries do
+        if Framework.Initialize() then
+            -- Success!
+            break
+        else
+            -- Failed, retry
+            retryCount = retryCount + 1
+            if retryCount < maxRetries then
+                Wait(retryDelay)
+            else
+                print('^1[LXR-Phonograph]^7 Failed to initialize framework after ' .. maxRetries .. ' attempts!')
+            end
+        end
+    end
 end)
 
 return Framework
