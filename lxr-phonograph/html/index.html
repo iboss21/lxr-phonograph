@@ -194,11 +194,10 @@
     }
 
     .container-phonograph {
-            position: absolute;
+            position: fixed;
             right: 2%;
-            top: 90%;
-            transform: translateY(-50%);
-            width: 150px;
+            bottom: 10%;
+            width: 200px;
             padding: 10px;
             background: rgba(0, 0, 0, 0.8);
             border: 2px solid rgba(156, 112, 60, 0.829);
@@ -209,11 +208,12 @@
         }
 
         .title-phonograph {
-            font-size: 18px;
+            font-size: 16px;
             font-weight: bold;
             color: rgba(156, 112, 60, 0.829);
-            margin: 0;
+            margin: 5px 0;
             word-wrap: break-word;
+            text-align: center;
         }
     
   </style>
@@ -279,7 +279,6 @@
       const data = event.data;
 
       const phonograph = document.querySelector('.container-phonograph');
-      const phonographText = document.getElementById('phonographText');
 
       if (data.translations && data.action === "show") {
         document.getElementById("controlTitle").textContent = data.translations.Title;
