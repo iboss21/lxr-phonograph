@@ -248,25 +248,63 @@ AddEventHandler('rs_phonograph:server:pickUpByOwner', function(uniqueId)
     )
 end)
 
-Framework.RegisterUsableItem(Config.PhonoItems, function(src, itemData)
-    local Character = Framework.GetCharacterIdentifiers(src)
-    if not Character then return end
+-- ════════════════════════════════════════════════════════════════════════════════
+-- ████████████████████████ ITEM REGISTRATION ████████████████████████████
+-- ════════════════════════════════════════════════════════════════════════════════
 
-    local identifier = Character.identifier
-    local charid = Character.charIdentifier
+-- Wait for Framework to be fully initialized before registering usable items
+Citizen.CreateThread(function()
+    -- Wait for Framework to be ready
+    while not Framework.IsReady do
+        Wait(100)
+    end
     
-    -- Close inventory
-    Framework.CloseInventory(src)
-
-    exports.oxmysql:execute('SELECT id FROM phonographs WHERE owner_identifier = ? AND owner_charid = ?', {
-        identifier, charid
-    }, function(result)
-        if result and #result > 0 then
-            Framework.Notify(src, Config.Notify.Phono, Config.Notify.Already, 'error', 3000)
-        else
-            TriggerClientEvent("rs_phonograph:client:placePropPhonograph", src)
+    -- Additional delay to ensure framework core is fully loaded and ready to accept item registrations
+    -- This prevents race conditions where the framework export is available but not yet ready
+    Wait(500)
+    
+    if Config.Debug.enabled then
+        print('^2[LXR-Phonograph]^7 Registering phonograph item: ^3' .. Config.PhonoItems .. '^7')
+    end
+    
+    Framework.RegisterUsableItem(Config.PhonoItems, function(src, itemData)
+        local Character = Framework.GetCharacterIdentifiers(src)
+        if not Character then
+            if Config.Debug.enabled then
+                print('^1[LXR-Phonograph]^7 Failed to get character identifiers for source: ' .. src)
+            end
+            return
         end
+
+        local identifier = Character.identifier
+        local charid = Character.charIdentifier
+        
+        if Config.Debug.enabled then
+            print('^2[LXR-Phonograph]^7 Player ' .. src .. ' using phonograph item')
+        end
+        
+        -- Close inventory
+        Framework.CloseInventory(src)
+
+        exports.oxmysql:execute('SELECT id FROM phonographs WHERE owner_identifier = ? AND owner_charid = ?', {
+            identifier, charid
+        }, function(result)
+            if result and #result > 0 then
+                if Config.Debug.enabled then
+                    print('^3[LXR-Phonograph]^7 Player ' .. src .. ' already has a phonograph placed')
+                end
+                Framework.Notify(src, Config.Notify.Phono, Config.Notify.Already, 'error', 3000)
+            else
+                if Config.Debug.enabled then
+                    print('^2[LXR-Phonograph]^7 Triggering placement for player ' .. src)
+                end
+                TriggerClientEvent("rs_phonograph:client:placePropPhonograph", src)
+            end
+        end)
     end)
+    
+    print('^2[LXR-Phonograph]^7 Phonograph item registration ^2complete^7')
+end)
 end)
 
 RegisterNetEvent("rs_phonograph:givePhonograph", function()
